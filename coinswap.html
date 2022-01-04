@@ -1,0 +1,99 @@
+﻿<!doctype html>
+<html class="no-js " lang="en">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=Edge">
+<meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
+<meta name="description" content="">
+
+<title>Everburn Coinswap</title>
+<!-- Favicon-->
+<link rel="icon" href="favicon.ico" type="image/x-icon">
+<link rel="stylesheet" href="assets/plugins/bootstrap/css/bootstrap.min.css">
+<!-- Custom Css -->
+<link rel="stylesheet" href="assets/css/main.css">
+<link rel="stylesheet" href="assets/css/color_skins.css">
+</head>
+<body class="theme-orange">
+	
+<!-- Main Content -->
+<div id="content">
+<section class="content">
+    <div class="block-header">
+        <div class="row">
+            <div class="col-lg-7 col-md-6 col-sm-12">
+                <h2>Coin swap
+                </h2>
+            </div>
+            
+        </div>
+    </div>
+    <div class="container-fluid">
+		<iframe class="iframeAdaptive" src="https://app.bogged.finance/swap?tokenIn=BNB&tokenOut=0xe9e7CEA3DedcA5984780Bafc599bD69ADd087D56&embed=1" height="900px" width="100%" scrolling="no" style="overflow: hidden" frameBorder="0"></iframe>
+<!--
+        <div class="row clearfix">
+            <div class="col-lg-12">
+                <div class="card">
+                    <div class="body">
+                        
+                    </div>
+                </div>
+            </div>
+        </div>
+-->
+    </div>
+</section>
+</div>
+	
+<script type="text/javascript" src="assets/plugins/jquery/jquery-v3.2.1.min.js"></script>
+<script type="application/javascript">
+$(document).ready(function() {
+ 
+    $('[class="navbarbutton"]').click(function(){
+	
+	$(this).closest('li').addClass('active open');
+		console.log(JSON.stringify($(this)));
+    $('[class="active open"]').removeClass("active open");
+    var toLoad = $(this).attr('href')+' #content';
+    $('#content').hide('fast',loadContent);
+//    $('#load').remove();
+//    $('#wrapper').append('<span id="load">LOADING...</span>');
+//    $('#load').fadeIn('normal');
+    function loadContent() {
+     $('#content').load(toLoad,'',showNewContent())
+    }
+    function showNewContent() {
+     $('#content').show('normal',hideLoader());
+    }
+    function hideLoader() {
+//     $('#load').fadeOut('normal');
+    }
+    return false;
+    
+    });
+});
+</script>
+	
+<!--
+<script>
+document.addEventListener("DOMContentLoaded", function() { // используем событие загрузки страницы, не включая картинки и прочее
+    let iframes = document.querySelectorAll('.iframeAdaptive');
+    iframes.forEach(function(i) { // перебираем имеющиеся Iframe с присвоенным нами классом
+        let iframeWidth = i.width; // берём из атрибута width ширину
+        let iframeHeight = i.height; // берём из атрибута height высоту
+        let iframeParent = i.parentNode; // определяем родительский элемент нашего Iframe
+        let parentWidth = parseInt(getComputedStyle(iframeParent)['width'])-parseInt(getComputedStyle(iframeParent)['padding-left'])-parseInt(getComputedStyle(iframeParent)['padding-right']); // берём родительский контейнер и высчитываем нужную нам ширину, без учёта padding, margin и border
+        let iframeProportion = parentWidth / iframeWidth;
+        i.setAttribute('width', parentWidth); // устанавливаем ширину нашим Iframe
+        i.setAttribute('height', iframeHeight); // устанавливаем высоту нашим Iframe
+    });
+});
+</script>
+-->
+<!-- Jquery Core Js --> 
+<script src="assets/bundles/libscripts.bundle.js"></script> <!-- Lib Scripts Plugin Js --> 
+<script src="assets/bundles/vendorscripts.bundle.js"></script> <!-- Lib Scripts Plugin Js --> 
+
+<script src="assets/bundles/mainscripts.bundle.js"></script>
+</body>
+</html>
