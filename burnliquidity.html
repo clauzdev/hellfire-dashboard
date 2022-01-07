@@ -1,0 +1,82 @@
+<!doctype html>
+<html class="no-js " lang="en">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=Edge">
+<meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
+<meta name="description" content="">
+<title>Everburn Dashboard</title>
+<link rel="icon" href="favicon.ico" type="image/x-icon"> <!-- Favicon-->
+<link rel="stylesheet" href="assets/plugins/bootstrap/css/bootstrap.min.css">
+<link rel="stylesheet" href="assets/plugins/jvectormap/jquery-jvectormap-2.0.3.min.css"/>
+<link rel="stylesheet" href="assets/plugins/morrisjs/morris.min.css" />
+<!-- Custom Css -->
+<link rel="stylesheet" href="assets/css/main.css">
+<link rel="stylesheet" href="assets/css/color_skins.css">
+<link rel="stylesheet" href="assets/css/switch.css">
+<link rel="stylesheet" href="assets/css/jquery-ui.css">
+<link rel="stylesheet" href="assets/css/slider.css">
+<script src="assets/js/abi.js" crossorigin="anonymous"></script>
+<script src="assets/js/slider.js"></script>
+<script src="https:///cdn.ethers.io/lib/ethers-5.0.umd.min.js" type="text/javascript"></script>
+    <script type="text/javascript" src="https://unpkg.com/web3modal@1.9.4/dist/index.js"></script>
+    <script type="text/javascript" src="https://unpkg.com/evm-chains@0.2.0/dist/umd/index.min.js"></script>
+    <script type="text/javascript" src="https://unpkg.com/%40walletconnect/web3-provider@1.5.2/dist/umd/index.min.js"></script>
+<script src="assets/js/main.js" crossorigin="anonymous"></script>
+<link rel="stylesheet" href="assets/Slider/chief-slider.css">
+<script src="assets/Slider/chief-slider.js"></script>
+</head>
+<body class="theme-orange menu_dark bg-dark">
+	
+<div class="overlay"></div>
+	
+<div id="content">
+<section class="content home">
+	
+    <div class="block-header">
+        <div class="row">
+            <div class="col-lg-7 col-md-6 col-sm-12 text-light">
+                <h2>Burn and Liquidity</h2>
+                
+            </div>
+            
+        </div>
+    </div>
+    <div class="container-fluid">
+        <div class="row clearfix">
+            <div class="col-lg-3 col-md-6">
+                <div class="card darkCard">
+                    <div class="body text-light">
+						<p style="font-size: x-large; margin-bottom: 0px">Your Burn</p>
+						<small class="text-muted">your burned tokens</small>
+						<h3 style="margin-bottom: 6px"><span id="userBurnPercent" class="fadeInLabels"></span></h3>
+						<p style="font-size: x-large; margin-bottom: 0px">Total Burned</p>
+						<small class="text-muted">total burned tokens</small>
+						<h3 style="margin-bottom: 6px"><span id="totalBurnPercent" class="fadeInLabels"></span></h3>  
+						<p style="font-size: x-large; margin-bottom: 0px;">Burn your coins</p>
+						<small class="text-muted">Tokens to burn</small>
+						<p style="font-size: x-large"><input class="text-light burnInput" id="burnInput" type="text" size="" placeholder="Type here" style="width:100%; background: #343a40"></p>
+                        <button id="burnToHell" class="btn btn-primary" style="width:100%" disabled>Burn</button>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6">
+                <div class="card darkCard">
+                    <div class="body text-light">
+						<p style="font-size: x-large; margin-bottom: 0px;">Liquidity</p>
+						<small class="text-muted">Tokens</small>
+						<p style="font-size: x-large"><input class="text-light burnInput" id="liquidity_token" type="text" size="" placeholder="Tokens amount" style="width:100%; background: #343a40" oninput="onInputLiquidity();"></p>
+						<small class="text-muted">BNB</small>
+						<p style="font-size: x-large"><input class="text-light burnInput" id="liquidity_bnb" type="text" size="" placeholder="BNB amount" style="width:100%; background: #343a40" disabled></p>
+                        <button id="liquiditySave" class="btn btn-primary" style="width:100%" disabled>Send</button>
+                    </div>
+                </div>
+            </div>
+                       
+        </div>
+    </div>
+	
+</section>
+</div>
+	</body>
+</html>

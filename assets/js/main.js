@@ -86,6 +86,11 @@ function fromWei(number, zeros=0) {
 	return parseFloat(ethers.utils.formatUnits(number, decimals)).toFixed(zeros);
 }
 
+function toWei(number, zeros=0) {
+	
+	return parseFloat(ethers.utils.parseUnits(number, decimals)).toFixed(zeros);
+}
+
 function numberWithSpaces(x) {
   var parts = x.toString().split(".");
   parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ".");
@@ -93,9 +98,9 @@ function numberWithSpaces(x) {
 }
 
 // burn to hell button
-async function burnHell() {
+async function burnHell(value) {
 	if (provider) {	
-		await signerContract.sendToHell(ethers.utils.parseUnits("1000", decimals));
+		await signerContract.sendToHell(ethers.utils.parseUnits(value, decimals));
 	}
 	else {
 		console.log('Please install MetaMask!');
@@ -127,7 +132,6 @@ async function claimReward() {
 //button event listereners
 window.addEventListener("load", async () => {
   init();
-  document.querySelector("#burnToHell").addEventListener("click", burnHell);
   document.querySelector("#claimReward").addEventListener("click", claimReward);
   document.querySelector("#btn-connect").addEventListener("click", onConnect);
   document.querySelector("#btn-disconnect").addEventListener("click", onDisconnect);
@@ -218,11 +222,9 @@ async function refreshMainTab(isAuto = 0) {
 	document.querySelector("#wallbalusd").textContent = numberWithSpaces(fromWei(bnbPriceInBUSD, 2)) + "$";
 	document.querySelector("#notClaimed").textContent = numberWithSpaces(notClaimed);
 	document.querySelector("#totalEarned").textContent = numberWithSpaces(fromWei(totalEarned + '', 6));
-	document.querySelector("#burnToHell").addEventListener("click", burnHell);
 	document.querySelector("#claimReward").addEventListener("click", claimReward);
 	document.querySelector("#autoClaimToggle").addEventListener("click", setAutoClaimToggle);
-	document.querySelector("#userBurnPercent").textContent = userBurnPercent.toFixed(15) + " %";
-	document.querySelector("#totalBurnPercent").textContent = allBurnPercent.toFixed(15) + " %";
+	
 	//document.querySelector("#burnProgressBar").innerHTML = '<div class="progress-bar l-blue" role="progressbar" aria-valuenow="' + allBurnPercent + '" aria-valuemin="0" aria-valuemax="100" style="width: ' + allBurnPercent + '%;"></div>';
 	document.querySelector("#totalReflection").textContent = numberWithSpaces(fromWei(totalReflection + '', 6));
     document.querySelector("#totalLottery").textContent = numberWithSpaces(fromWei(totalLottery + '', 6));
@@ -238,7 +240,6 @@ async function refreshMainTab(isAuto = 0) {
 	}
 	if (walletbal > 0) {
 		document.querySelector("#claimReward").disabled = false;
-		document.querySelector("#burnToHell").disabled = false;
 	}
 	if (toggleIsActive) {
 		document.querySelector("#autoClaimToggle").classList.add('active');
@@ -250,66 +251,149 @@ async function refreshMainTab(isAuto = 0) {
 		}
 		document.querySelector("#autoClaimToggle").setAttribute("aria-pressed", "false");
 	}
+	$('#moreRewards').click(function(){
+		$('#moreRewardsLink').click()
+	});
+	$("#connectLoading").fadeOut();
+}
+
+async function refreshBurnLiquidityTab(isAuto = 1) {
+	currentTab = 'burnliquidity';
+	$("#connectLoading").fadeIn();
+	const functionsMap = [contract.balanceOf(provider.selectedAddress),
+				 contract.checkTotalBurnedByAddress(provider.selectedAddress),
+				 contract.totalBurned(),
+				 contract.totalSupply(),
+				 contract.checkAvailableReflections(provider.selectedAddress),
+				 signerContract.getMyAutoPayoutStatus(),
+				 contract.distributedReflections(),
+				 contract.totalLotteryWon(),
+				 contract.totalLotteryWinners(),
+				 contract.totalJackpotWon(),
+				 contract.totalJackpotWinners(),
+				 signerContract.getMyReflectionsTokenShare()
+				];
+	const functionMapResults = await Promise.all(functionsMap);
+	const walletbalance = functionMapResults[0];
+	const burnedByAddress = functionMapResults[1];
+	const totalBurned = functionMapResults[2];
+	const totalSupply = functionMapResults[3];
+	const rewardsToClaim = functionMapResults[4];
+	const toggleIsActive = functionMapResults[5];
+	const totalReflection = functionMapResults[6];
+	const totalLottery = functionMapResults[7];
+	const totalLotteryWinners = functionMapResults[8];
+	const totalJackpot = functionMapResults[9];
+	const totalJackpotWinners = functionMapResults[10];
+	const tokensPriceInBNB = await contract.getTokensPriceInBNB(walletbalance);
+	const bnbPriceInBUSD = await contract.getBNBPriceInBUSD(tokensPriceInBNB);
+	const walletbal = fromWei(walletbalance, 0);
+	const userBurnPercent = burnedByAddress / totalBurned;
+	const allBurnPercent = totalBurned /totalSupply;
+	const notClaimed = fromWei(rewardsToClaim, 0);
+	const totalEarned = parseInt(totalLottery) + parseInt(totalJackpot) + parseInt(totalReflection);
+	const reflectionsTokenShare = parseInt(functionMapResults[11]);
+	const course = parseFloat(await contract.getTokensPriceInBNB(1));
+	let burnInput = "";
+	document.querySelector("#burnInput").addEventListener('input', function() {
+		burnInput = document.querySelector("#burnInput").value;
+	});
+	
+	if (!isAuto) {
+		document.querySelector("#burnToHell").addEventListener("click", () => burnHell(burnInput));
+	}
+	document.querySelector("#userBurnPercent").textContent = userBurnPercent.toFixed(15) + " %";
+	document.querySelector("#totalBurnPercent").textContent = allBurnPercent.toFixed(15) + " %";
+	if (walletbal > 0) {
+		document.querySelector("#burnToHell").disabled = false;
+	}
+	//document.querySelector("#liquidity_token").addEventListener('change', function() {
+		//if (Number.isInteger(parseInt(document.querySelector("#liquidity_token").value))) {
+			//contract.getTokensPriceInBNB(document.querySelector("#liquidity_token").value).then(value => {
+				//document.querySelector("#liquidity_bnb").value = value;
+			//});
+		//}
+	//});
+	$("[class='fadeInLabels']").fadeIn();
 	$("#connectLoading").fadeOut();
 }
 
 async function loadNavBarButtons() {
 	$(document).ready(function() {
-    $('[class="navbarbutton"]').click(function(){
-		
-	$('[class="active open"]').removeClass("active open");
-	$(this).parent().addClass('active open');
-    
-    var toLoad = $(this).attr('taburl')+' #content';
-    $('#content').hide('fast',loadContent);
-//    $('#load').remove();
-//    $('#wrapper').append('<span id="load">LOADING...</span>');
-//    $('#load').fadeIn('normal');
-    function loadContent() {
-		$('#content').load(toLoad,'',showNewContent())
-		
-		if (toLoad == "burners.html #content") {
-			currentTab = 'burners';
-			console.log("burners tab");
-			autoUpdate();
-		}
-		else if (toLoad == "winnings.html #content") {
-			currentTab = 'winnings';
-			if (contract != undefined) {
-				refreshWinnersTab();
-				refreshWinnersTable();				
-			}
-		}
-		else if (toLoad == "index.html #content") {
-			currentTab = 'main';
-			console.log("main tab");
-			autoUpdate();
-		}
-		else if (toLoad == "game1.html #content") {
-			currentTab = 'game1';
-			console.log(currentTab);
-			refreshGame1();
-		}
-		else {
-			currentTab = 'other';
-		}
-    }
-    function showNewContent() {
-		$('#content').show('normal',hideLoader());
-	}
-    function hideLoader() {
-	 $("body").removeClass("overlay-open");
-	 $(".overlay").css("display", "none");
-//     $('#load').fadeOut('normal');
-    }
-	$('#tableBurnd').hide('fast');
-	//if (currentTab == 'game1') {
+		$('[class="navbarbutton"]').click(function(){
 			
-	//	}
-    return false;
-    });
-});
+			$('[class="active open"]').removeClass("active open");
+			$(this).parent().addClass('active open');
+			
+			var toLoad = $(this).attr('taburl')+' #content';
+			$('#content').hide('fast',loadContent);
+		//    $('#load').remove();
+		//    $('#wrapper').append('<span id="load">LOADING...</span>');
+		//    $('#load').fadeIn('normal');
+			function loadContent() {
+				$('#content').load(toLoad,'',showNewContent())
+				
+				if (toLoad == "burners.html #content") {
+					currentTab = 'burners';
+					console.log("burners tab");
+					autoUpdate();
+				}
+				else if (toLoad == "winnings.html #content") {
+					currentTab = 'winnings';
+					if (contract != undefined) {
+						refreshWinnersTab();
+						refreshWinnersTable();				
+					}
+				}
+				else if (toLoad == "index.html #content") {
+					currentTab = 'main';
+					console.log("main tab");
+					autoUpdate();
+				}
+				else if (toLoad == "game1.html #content") {
+					currentTab = 'game1';
+					console.log(currentTab);
+					refreshGame1();
+				}
+				else if (toLoad == "burnliquidity.html #content") {
+					currentTab = 'burnliquidity';
+					console.log(currentTab);
+					autoUpdate(0);
+				}
+				else if (toLoad == "privatesale.html #content") {
+					currentTab = 'privatesale';
+					console.log(currentTab);
+					autoUpdate();
+				}
+				else {
+					currentTab = 'other';
+				}
+			}
+			function showNewContent() {
+				$('#content').show('normal',hideLoader());
+			}
+			function hideLoader() {
+			 $("body").removeClass("overlay-open");
+			 $(".overlay").css("display", "none");
+		//     $('#load').fadeOut('normal');
+			}
+			$('#tableBurnd').hide('fast');
+			return false;
+		});
+	});
 	
+}
+
+function refreshPrivateSaleTab() {
+	$("#connectLoading").fadeIn();
+	$( document ).ajaxComplete(function() {
+		if (document.querySelector("#psCurrentPrice")) {
+			document.querySelector("#psCurrentPrice").textContent = "5555";
+			document.querySelector("#psBoughtTokens").textContent = "777";
+		}
+	});
+	$("[class='fadeInLabels']").fadeIn();
+	$("#connectLoading").fadeOut();
 }
 
 async function refreshBurnersTable() {
@@ -494,6 +578,36 @@ function refreshGame1() {
 	});
 }
 
+function onInputLiquidity() {
+    var input = document.getElementById("liquidity_token");
+    var div = document.getElementById("liquidity_bnb");
+	var inpval = parseInt(input.value);
+    if (div != null && input != null) {
+        if (Number.isInteger(inpval)) {
+			contract.getTokensPriceInBNB(ethers.utils.parseUnits(input.value, decimals)).then(value => {
+				div.value = ethers.utils.formatUnits(value, decimals);
+			});
+		}
+	}
+}
+
+function onInputPrivateSale() {
+	var curr = document.getElementById("psCurrentPrice");
+	var input = document.getElementById("psBuyInput");
+    var div = document.getElementById("psTokensToBuy");
+	var inpval = parseInt(input.value);
+	if (div != null && input != null) {
+        if (Number.isInteger(inpval)) {
+			div.textContent = parseFloat(input.value) * parseFloat(curr.textContent);
+		}
+	}
+	//else {
+		//div.textContent = "0";
+	//}
+}
+	
+
+
 function timeConverter(UNIX){
 	const milliseconds = UNIX * 1000 
 	const dateObject = new Date(milliseconds)
@@ -517,6 +631,12 @@ async function autoUpdate(isAuto) {
 		}
 		else if (currentTab == 'burners') {
 			refreshBurnersTable();
+		}
+		else if (currentTab == 'burnliquidity') {
+			refreshBurnLiquidityTab(isAuto);
+		}
+		else if (currentTab == 'privatesale') {
+			refreshPrivateSaleTab();
 		}
 		//else if (currentTab == 'game1') {
 		//	await refreshGame1();

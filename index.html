@@ -75,15 +75,14 @@
             <li class="header">MAIN</li>
             <li class="active open"><a taburl="index.html" class="navbarbutton"><i class="zmdi zmdi-home"></i><span>Dashboard</span></a></li>            
             
-            
+            <li><a id="moreRewardsLink" taburl="burnliquidity.html" class="navbarbutton"><i class="zmdi zmdi-money"></i><span>Burn & liquidity</span></a></li>
             <li><a taburl="coinswap.html" class="navbarbutton"><i class="zmdi zmdi-swap"></i><span>Coin swap</span></a></li>
 			<li><a taburl="burners.html" class="navbarbutton"><i class="zmdi zmdi-fire"></i><span>Coin burners</span></a></li>
 			<li><a taburl="winnings.html" class="navbarbutton"><i class="zmdi zmdi-accounts"></i><span>Winners</span></a></li>
-			<li><a taburl="games.html" class="navbarbutton"><i class="zmdi zmdi-gamepad"></i><span>Games</span></a></li>
-			<li><a href="javascript:void(0);" class="menu-toggle"><i class="zmdi zmdi-gamepad"></i><span>Gamez</span> </a>
+			<li><a href="javascript:void(0);" class="menu-toggle"><i class="zmdi zmdi-gamepad"></i><span>Games</span> </a>
                 <ul style="list-style-type: none">
                     <li><a taburl="game1.html" class="navbarbutton"><i class="zmdi zmdi-arrow-split"></i><span>Prediction</span></a></li>
-                    <li><a taburl="game2.html" class="navbarbutton"><i class="zmdi zmdi-google-play"></i><span>Duels</span></a></li>
+                    <li><a taburl="game2.html" class="navbarbutton"><i class="zmdi zmdi-confirmation-number"></i><span>Duels</span></a></li>
 <!--
                     <li><a href="property-list4.html">4 Column</a></li>                        
                     <li><a href="add-property.html">Add Property</a></li>
@@ -91,7 +90,9 @@
 -->
                 </ul>
             </li>
+			<li><a taburl="privatesale.html" class="navbarbutton"><i class="zmdi zmdi-store"></i><span>Private sale</span></a></li>
             
+<!--
             <li class="header">Extra</li>
             <li>
                 <div class="progress-container progress-primary m-t-10">
@@ -111,6 +112,7 @@
                     </div>
                 </div>
             </li>
+-->
         </ul>
     </div>
 </aside>
@@ -153,27 +155,7 @@
         						<div class="handle"></div>
       						</button>
     					</div></center>
-                    </div>
-                </div>
-            </div>
-            <div class="col-lg-3 col-md-6">
-                <div class="card darkCard">
-                    <div class="body text-light">
-						<p style="font-size: x-large; margin-bottom: 0px">Your Burn</p>
-						<small class="text-muted">your burned tokens</small>
-						<h3 style="margin-bottom: 6px"><span id="userBurnPercent" class="fadeInLabels"></span></h3>
-						<p style="font-size: x-large; margin-bottom: 0px">Total Burned</p>
-						<small class="text-muted">total burned tokens</small>
-						<h3 style="margin-bottom: 6px"><span id="totalBurnPercent" class="fadeInLabels"></span></h3>  
-<!--
-                        <div class="progress" id="burnProgressBar">
-                            <div class="progress-bar l-blue" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0%;"></div>
-                        </div>
--->
-						<p style="font-size: x-large; margin-bottom: 0px;">Burn your coins</p>
-						<small class="text-muted">Tokens to burn</small>
-						<p style="font-size: x-large"><input class="text-light burnInput" id="burnInput" type="text" size="" placeholder="Type here" style="width:100%; background: #343a40"></p>
-                        <button id="burnToHell" class="btn btn-primary" style="width:100%" disabled>Burn</button>
+						<button id="moreRewards" taburl="burnliquidity.html" class="btn btn-secondary navbarbutton" style="width:100%">Get more rewards</button>
                     </div>
                 </div>
             </div>

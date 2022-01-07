@@ -179,8 +179,8 @@ body {
 
 @media (min-width: 1200px) {
   .slider__item {
-	flex: 0 0 33.3333333333%;
-	max-width: 33.3333333333%;
+	flex: 0 0 33.33333%;
+	max-width: 33.33333%;
   }
 }
 
@@ -228,7 +228,7 @@ body {
   display: flex;
   padding: 5px 15px;
   color: #616161;
-  border-radius: 25px 25px 25px 25px;
+  border-radius: 5px 5px 5px 5px;
 }
 
 .slider__content_avatar {
@@ -321,7 +321,7 @@ body {
 }
 
 .card-body {
-	border-radius: 25px 25px 25px 25px;
+	border-radius: 5px 5px 5px 5px;
 }
 
 .stonks {
