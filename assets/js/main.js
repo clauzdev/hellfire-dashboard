@@ -4,6 +4,7 @@ const contractAddress = "0x95021fc8dd017f6c67AB66E9FD59c4846eDdB13f";
 const contractABI = getAbi();
 const saleAddress = "0xC47814b596f3c48fdeA4c4ecc8D30f68332434De";
 const saleABI = getSaleAbi();
+const guestNetwork = 'https://data-seed-prebsc-1-s1.binance.org:8545';
 
 const Web3Modal = window.Web3Modal.default;
 const WalletConnectProvider = window.WalletConnectProvider.default;
@@ -25,7 +26,15 @@ let accounts;
 let currentTab = 'main';
 
 async function init() {	
-	
+	try {
+		guestProvider = new ethers.providers.JsonRpcProvider(guestNetwork);
+	} catch (e) {
+		console.log("Could not get a wallet connection", e);
+		return;
+	}
+	contract = new ethers.Contract(contractAddress, contractABI, guestProvider);
+	saleContract = new ethers.Contract(saleAddress, saleABI, guestProvider);
+	autoUpdate();
 }
 
 async function onConnect() {
@@ -157,7 +166,10 @@ function cutAdress(adress) {
 }
 
 function ResetAll() {
-  provider = null;
+	provider = null;
+  signerContract = null;
+  signerSaleContract = null;
+  init();
   document.querySelector("#wallbal").textContent = "0";    
   document.querySelector("#wallbalusd").textContent = "($0)"; 
   document.querySelector("#notClaimed").textContent = "0"; 
@@ -199,72 +211,104 @@ async function loadSlidersData(reflectionsTokenShare) {
 async function refreshMainTab(isAuto = 0) {
 	currentTab = 'main';
 	$("#connectLoading").fadeIn();
-	const functionsMap = [contract.balanceOf(provider.selectedAddress),
-				 contract.checkTotalBurnedByAddress(provider.selectedAddress),
-				 contract.totalBurned(),
-				 contract.totalSupply(),
-				 contract.checkAvailableReflections(provider.selectedAddress),
-				 signerContract.getMyAutoPayoutStatus().catch((error) => { handleError(error); }),
-				 contract.distributedReflections(),
-				 contract.totalLotteryWon(),
-				 contract.totalLotteryWinners(),
-				 contract.totalJackpotWon(),
-				 contract.totalJackpotWinners(),
-				 signerContract.getMyReflectionsTokenShare().catch((error) => { handleError(error); })
-				];
-	const functionMapResults = await Promise.all(functionsMap);
-	const walletbalance = functionMapResults[0];
-	const burnedByAddress = functionMapResults[1];
-	const totalBurned = functionMapResults[2];
-	const totalSupply = functionMapResults[3];
-	const rewardsToClaim = functionMapResults[4];
-	const toggleIsActive = functionMapResults[5];
-	const totalReflection = functionMapResults[6];
-	const totalLottery = functionMapResults[7];
-	const totalLotteryWinners = functionMapResults[8];
-	const totalJackpot = functionMapResults[9];
-	const totalJackpotWinners = functionMapResults[10];
-	const tokensPriceInBNB = await contract.getTokensPriceInBNB(walletbalance);
-	const bnbPriceInBUSD = await contract.getBNBPriceInBUSD(tokensPriceInBNB);
-	const walletbal = fromWei(walletbalance, 0);
-	const userBurnPercent = burnedByAddress / totalBurned;
-	const allBurnPercent = totalBurned /totalSupply;
-	const notClaimed = fromWei(rewardsToClaim, 0);
-	const totalEarned = parseInt(totalLottery) + parseInt(totalJackpot) + parseInt(totalReflection);
-	const reflectionsTokenShare = parseInt(functionMapResults[11]);
-	document.querySelector("#wallbal").textContent = numberWithSpaces(walletbal);
-	document.querySelector("#wallbalusd").textContent = numberWithSpaces(fromWei(bnbPriceInBUSD, 2)) + "$";
-	document.querySelector("#notClaimed").textContent = numberWithSpaces(notClaimed);
-	document.querySelector("#totalEarned").textContent = numberWithSpaces(fromWei(totalEarned + '', 6));
-	document.querySelector("#claimReward").addEventListener("click", claimReward);
-	document.querySelector("#autoClaimToggle").addEventListener("click", setAutoClaimToggle);
-	
-	//document.querySelector("#burnProgressBar").innerHTML = '<div class="progress-bar l-blue" role="progressbar" aria-valuenow="' + allBurnPercent + '" aria-valuemin="0" aria-valuemax="100" style="width: ' + allBurnPercent + '%;"></div>';
-	document.querySelector("#totalReflection").textContent = numberWithSpaces(fromWei(totalReflection + '', 6));
-    document.querySelector("#totalLottery").textContent = numberWithSpaces(fromWei(totalLottery + '', 6));
-	document.querySelector("#totalLotteryWinners").textContent = "(" + totalLotteryWinners + " winners)";
-    document.querySelector("#totalJackpot").textContent = numberWithSpaces(fromWei(totalJackpot + '', 6));
-	document.querySelector("#totalJackpotWinners").textContent = "(" + totalJackpotWinners + " winners)";
-	document.getElementById("setReflectionsTokenShare").addEventListener("click", setReflectionsTokenShare);
-	document.getElementById("resetReflectionsTokenShare").addEventListener("click", resetReflectionsTokenShare);
-	document.getElementById("setReflectionsTokenShare").disabled = false;
-	$("[class='fadeInLabels']").fadeIn();
-	if (!isAuto) {
+	if (signerContract != undefined) {
+		const functionsMap = [contract.balanceOf(provider.selectedAddress),
+			contract.checkTotalBurnedByAddress(provider.selectedAddress),
+			contract.totalBurned(),
+			contract.totalSupply(),
+			contract.checkAvailableReflections(provider.selectedAddress),
+			signerContract.getMyAutoPayoutStatus().catch((error) => { handleError(error); }),
+			contract.distributedReflections(),
+			contract.totalLotteryWon(),
+			contract.totalLotteryWinners(),
+			contract.totalJackpotWon(),
+			contract.totalJackpotWinners(),
+			signerContract.getMyReflectionsTokenShare().catch((error) => { handleError(error); })
+		   ];
+		const functionMapResults = await Promise.all(functionsMap);
+		const walletbalance = functionMapResults[0];
+		const burnedByAddress = functionMapResults[1];
+		const totalBurned = functionMapResults[2];
+		const totalSupply = functionMapResults[3];
+		const rewardsToClaim = functionMapResults[4];
+		const toggleIsActive = functionMapResults[5];
+		const totalReflection = functionMapResults[6];
+		const totalLottery = functionMapResults[7];
+		const totalLotteryWinners = functionMapResults[8];
+		const totalJackpot = functionMapResults[9];
+		const totalJackpotWinners = functionMapResults[10];
+		const tokensPriceInBNB = await contract.getTokensPriceInBNB(walletbalance);
+		const bnbPriceInBUSD = await contract.getBNBPriceInBUSD(tokensPriceInBNB);
+		const walletbal = fromWei(walletbalance, 0);
+		const userBurnPercent = burnedByAddress / totalBurned;
+		const allBurnPercent = totalBurned /totalSupply;
+		const notClaimed = fromWei(rewardsToClaim, 0);
+		const totalEarned = parseInt(totalLottery) + parseInt(totalJackpot) + parseInt(totalReflection);
+		const reflectionsTokenShare = parseInt(functionMapResults[11]);
+		document.querySelector("#wallbal").textContent = numberWithSpaces(walletbal);
+		document.querySelector("#wallbalusd").textContent = numberWithSpaces(fromWei(bnbPriceInBUSD, 2)) + "$";
+		document.querySelector("#notClaimed").textContent = numberWithSpaces(notClaimed);
+		document.querySelector("#totalEarned").textContent = numberWithSpaces(fromWei(totalEarned + '', 6));
+		document.querySelector("#claimReward").addEventListener("click", claimReward);
+		document.querySelector("#autoClaimToggle").addEventListener("click", setAutoClaimToggle);
+
+		//document.querySelector("#burnProgressBar").innerHTML = '<div class="progress-bar l-blue" role="progressbar" aria-valuenow="' + allBurnPercent + '" aria-valuemin="0" aria-valuemax="100" style="width: ' + allBurnPercent + '%;"></div>';
+		document.querySelector("#totalReflection").textContent = numberWithSpaces(fromWei(totalReflection + '', 6));
+		document.querySelector("#totalLottery").textContent = numberWithSpaces(fromWei(totalLottery + '', 6));
+		document.querySelector("#totalLotteryWinners").textContent = "(" + totalLotteryWinners + " winners)";
+		document.querySelector("#totalJackpot").textContent = numberWithSpaces(fromWei(totalJackpot + '', 6));
+		document.querySelector("#totalJackpotWinners").textContent = "(" + totalJackpotWinners + " winners)";
+		document.getElementById("setReflectionsTokenShare").addEventListener("click", setReflectionsTokenShare);
+		document.getElementById("resetReflectionsTokenShare").addEventListener("click", resetReflectionsTokenShare);
+		document.getElementById("setReflectionsTokenShare").disabled = false;
+		$("[class='fadeInLabels']").fadeIn();
+		if (!isAuto) {
 		loadSlidersData(reflectionsTokenShare);
-	}
-	if (walletbal > 0) {
+		}
+		if (walletbal > 0) {
 		document.querySelector("#claimReward").disabled = false;
-	}
-	if (toggleIsActive) {
+		}
+		if (toggleIsActive) {
 		document.querySelector("#autoClaimToggle").classList.add('active');
 		document.querySelector("#autoClaimToggle").setAttribute("aria-pressed", "true");
-	}
-	else {
+		}
+		else {
 		if (document.querySelector("#autoClaimToggle").classList.contains('active')) {
 			document.querySelector("#autoClaimToggle").classList.remove('active');
 		}
 		document.querySelector("#autoClaimToggle").setAttribute("aria-pressed", "false");
+		}
 	}
+	else {
+		const functionsMap = [
+			contract.totalBurned(),
+			contract.totalSupply(),
+			contract.distributedReflections(),
+			contract.totalLotteryWon(),
+			contract.totalLotteryWinners(),
+			contract.totalJackpotWon(),
+			contract.totalJackpotWinners(),
+		   ];
+		const functionMapResults = await Promise.all(functionsMap);
+		const totalBurned = functionMapResults[0];
+		const totalSupply = functionMapResults[1];
+		const totalReflection = functionMapResults[2];
+		const totalLottery = functionMapResults[3];
+		const totalLotteryWinners = functionMapResults[4];
+		const totalJackpot = functionMapResults[5];
+		const totalJackpotWinners = functionMapResults[6];
+		const allBurnPercent = totalBurned /totalSupply;
+		const totalEarned = parseInt(totalLottery) + parseInt(totalJackpot) + parseInt(totalReflection);
+		document.querySelector("#totalEarned").textContent = numberWithSpaces(fromWei(totalEarned + '', 6));
+
+		document.querySelector("#totalReflection").textContent = numberWithSpaces(fromWei(totalReflection + '', 6));
+		document.querySelector("#totalLottery").textContent = numberWithSpaces(fromWei(totalLottery + '', 6));
+		document.querySelector("#totalLotteryWinners").textContent = "(" + totalLotteryWinners + " winners)";
+		document.querySelector("#totalJackpot").textContent = numberWithSpaces(fromWei(totalJackpot + '', 6));
+		document.querySelector("#totalJackpotWinners").textContent = "(" + totalJackpotWinners + " winners)";
+		$("[class='fadeInLabels']").fadeIn();
+	}
+	
 	$('#moreRewards').click(function(){
 		$('#moreRewardsLink').click()
 	});
@@ -274,53 +318,88 @@ async function refreshMainTab(isAuto = 0) {
 async function refreshBurnLiquidityTab(isAuto = 1) {
 	currentTab = 'burnliquidity';
 	$("#connectLoading").fadeIn();
-	const functionsMap = [contract.balanceOf(provider.selectedAddress),
-				 contract.checkTotalBurnedByAddress(provider.selectedAddress),
-				 contract.totalBurned(),
-				 contract.totalSupply(),
-				 contract.checkAvailableReflections(provider.selectedAddress),
-				 signerContract.getMyAutoPayoutStatus(),
-				 contract.distributedReflections(),
-				 contract.totalLotteryWon(),
-				 contract.totalLotteryWinners(),
-				 contract.totalJackpotWon(),
-				 contract.totalJackpotWinners(),
-				 signerContract.getMyReflectionsTokenShare()
-				];
-	const functionMapResults = await Promise.all(functionsMap);
-	const walletbalance = functionMapResults[0];
-	const burnedByAddress = functionMapResults[1];
-	const totalBurned = functionMapResults[2];
-	const totalSupply = functionMapResults[3];
-	const rewardsToClaim = functionMapResults[4];
-	const toggleIsActive = functionMapResults[5];
-	const totalReflection = functionMapResults[6];
-	const totalLottery = functionMapResults[7];
-	const totalLotteryWinners = functionMapResults[8];
-	const totalJackpot = functionMapResults[9];
-	const totalJackpotWinners = functionMapResults[10];
-	const tokensPriceInBNB = await contract.getTokensPriceInBNB(walletbalance);
-	const bnbPriceInBUSD = await contract.getBNBPriceInBUSD(tokensPriceInBNB);
-	const walletbal = fromWei(walletbalance, 0);
-	const userBurnPercent = burnedByAddress / totalBurned;
-	const allBurnPercent = totalBurned /totalSupply;
-	const notClaimed = fromWei(rewardsToClaim, 0);
-	const totalEarned = parseInt(totalLottery) + parseInt(totalJackpot) + parseInt(totalReflection);
-	const reflectionsTokenShare = parseInt(functionMapResults[11]);
-	const course = parseFloat(await contract.getTokensPriceInBNB(1));
-	let burnInput = "";
-	document.querySelector("#burnInput").addEventListener('input', function() {
+	if (signerContract != undefined) {
+		const functionsMap = [contract.balanceOf(provider.selectedAddress),
+			contract.checkTotalBurnedByAddress(provider.selectedAddress),
+			contract.totalBurned(),
+			contract.totalSupply(),
+			contract.checkAvailableReflections(provider.selectedAddress),
+			signerContract.getMyAutoPayoutStatus(),
+			contract.distributedReflections(),
+			contract.totalLotteryWon(),
+			contract.totalLotteryWinners(),
+			contract.totalJackpotWon(),
+			contract.totalJackpotWinners(),
+			signerContract.getMyReflectionsTokenShare()
+		   ];
+		const functionMapResults = await Promise.all(functionsMap);
+		const walletbalance = functionMapResults[0];
+		const burnedByAddress = functionMapResults[1];
+		const totalBurned = functionMapResults[2];
+		const totalSupply = functionMapResults[3];
+		const rewardsToClaim = functionMapResults[4];
+		const toggleIsActive = functionMapResults[5];
+		const totalReflection = functionMapResults[6];
+		const totalLottery = functionMapResults[7];
+		const totalLotteryWinners = functionMapResults[8];
+		const totalJackpot = functionMapResults[9];
+		const totalJackpotWinners = functionMapResults[10];
+		const tokensPriceInBNB = await contract.getTokensPriceInBNB(walletbalance);
+		const bnbPriceInBUSD = await contract.getBNBPriceInBUSD(tokensPriceInBNB);
+		const walletbal = fromWei(walletbalance, 0);
+		const userBurnPercent = burnedByAddress / totalBurned;
+		const allBurnPercent = totalBurned /totalSupply;
+		const notClaimed = fromWei(rewardsToClaim, 0);
+		const totalEarned = parseInt(totalLottery) + parseInt(totalJackpot) + parseInt(totalReflection);
+		const reflectionsTokenShare = parseInt(functionMapResults[11]);
+		const course = parseFloat(await contract.getTokensPriceInBNB(1));
+		let burnInput = "";
+		document.querySelector("#burnInput").addEventListener('input', function() {
 		burnInput = document.querySelector("#burnInput").value;
-	});
-	
-	if (!isAuto) {
+		});
+
+		if (!isAuto) {
 		document.querySelector("#burnToHell").addEventListener("click", () => burnHell(burnInput));
-	}
-	document.querySelector("#userBurnPercent").textContent = userBurnPercent.toFixed(15) + " %";
-	document.querySelector("#totalBurnPercent").textContent = allBurnPercent.toFixed(15) + " %";
-	if (walletbal > 0) {
+		}
+		document.querySelector("#userBurnPercent").textContent = userBurnPercent.toFixed(15) + " %";
+		document.querySelector("#totalBurnPercent").textContent = allBurnPercent.toFixed(15) + " %";
+		if (walletbal > 0) {
 		document.querySelector("#burnToHell").disabled = false;
+		}
 	}
+	else {
+		const functionsMap = [
+			contract.totalBurned(),
+			contract.totalSupply(),
+			contract.distributedReflections(),
+			contract.totalLotteryWon(),
+			contract.totalLotteryWinners(),
+			contract.totalJackpotWon(),
+			contract.totalJackpotWinners(),
+		   ];
+		const functionMapResults = await Promise.all(functionsMap);
+		const totalBurned = functionMapResults[0];
+		const totalSupply = functionMapResults[1];
+		const totalReflection = functionMapResults[2];
+		const totalLottery = functionMapResults[3];
+		const totalLotteryWinners = functionMapResults[4];
+		const totalJackpot = functionMapResults[5];
+		const totalJackpotWinners = functionMapResults[6];
+		const allBurnPercent = totalBurned /totalSupply;
+		const totalEarned = parseInt(totalLottery) + parseInt(totalJackpot) + parseInt(totalReflection);
+		const course = parseFloat(await contract.getTokensPriceInBNB(1));
+		let burnInput = "";
+		if (document.querySelector("#burnInput")) {
+			document.querySelector("#burnInput").addEventListener('input', function() {
+				if (document.querySelector("#burnInput").value) {
+					burnInput = document.querySelector("#burnInput").value;
+				}
+			});
+			document.querySelector("#totalBurnPercent").textContent = allBurnPercent.toFixed(15) + " %";
+		}
+		
+	}
+	
 	
 	$("[class='fadeInLabels']").fadeIn();
 	$("#connectLoading").fadeOut();
@@ -394,87 +473,160 @@ async function loadNavBarButtons() {
 
 async function refreshPrivateSaleTab() {
 	$("#connectLoading").fadeIn();
-	const saleFunctionsMap = [saleContract.balanceOf(provider.selectedAddress),
-				 saleContract.price(),
-				 saleContract.isEnded(),
-				 saleContract.minBuy(),
-				 saleContract.maxBuy(),
-				 saleContract.totalContributed(),
-				 saleContract.hardCap(),
-				 saleContract.refundType(),
-				 saleContract.refundFee(),
-				 saleContract.AccountContribution(provider.selectedAddress)
-				];
-	const saleFunctionMapResults = await Promise.all(saleFunctionsMap);
-	const salebalance =  saleFunctionMapResults[0];
-	const saleprice = fromWei(saleFunctionMapResults[1]);
-	const saleisEnded = saleFunctionMapResults[2];
-	const saleminBuy = saleFunctionMapResults[3];
-	const salemaxBuy = saleFunctionMapResults[4];
-	const saletotalContibuted = saleFunctionMapResults[5];
-	const salehardCap = saleFunctionMapResults[6];
-	const salerefundType = parseInt(saleFunctionMapResults[7]);
-	const salerefundFee = saleFunctionMapResults[8];
-	const saleAccountContribution = saleFunctionMapResults[9];
+	if (signerContract != undefined) {
+		const saleFunctionsMap = [saleContract.balanceOf(provider.selectedAddress),
+					saleContract.price(),
+					saleContract.isEnded(),
+					saleContract.minBuy(),
+					saleContract.maxBuy(),
+					saleContract.totalContributed(),
+					saleContract.hardCap(),
+					saleContract.refundType(),
+					saleContract.refundFee(),
+					saleContract.AccountContribution(provider.selectedAddress)
+					];
+		const saleFunctionMapResults = await Promise.all(saleFunctionsMap);
+		const salebalance =  saleFunctionMapResults[0];
+		const saleprice = fromWei(saleFunctionMapResults[1]);
+		const saleisEnded = saleFunctionMapResults[2];
+		const saleminBuy = saleFunctionMapResults[3];
+		const salemaxBuy = saleFunctionMapResults[4];
+		const saletotalContibuted = saleFunctionMapResults[5];
+		const salehardCap = saleFunctionMapResults[6];
+		const salerefundType = parseInt(saleFunctionMapResults[7]);
+		const salerefundFee = saleFunctionMapResults[8];
+		const saleAccountContribution = saleFunctionMapResults[9];
 
-	var bnbInput = document.querySelector("#psBuyInput").value;
-	var taxText;
-	document.querySelector("#psCurrentPrice").textContent = saleprice;
-	document.querySelector("#psBoughtTokens").textContent = fromWei(salebalance);
-	document.querySelector("#psTotalContributed").textContent = fromWei(saletotalContibuted);
-	document.querySelector("#psHardCap").textContent = fromWei(salehardCap, '0');
-	document.querySelector("#psMinBuy").textContent = "Min buy: " + fromWei(saleminBuy, '0');
-	document.querySelector("#psMaxBuy").textContent = "Max buy: " + fromWei(salemaxBuy, '0');
-	if (salerefundType == 1) {
-		taxText = 'Refund currently available with ' + salerefundFee + '% tax';
-	}
-	else if (salerefundType == 2) {
-		taxText = 'Refund currently available without taxes';
-	}
-	document.querySelector("#psRefundButton").addEventListener("click", async function() {
-		
-		Swal.fire({
-			title: 'Are you sure?',
-			text: taxText,
-			icon: 'warning',
-			showCancelButton: true,
-			confirmButtonColor: '#3085d6',
-			cancelButtonColor: '#d33',
-			confirmButtonText: 'Refund'
-		  }).then((result) => async function() {
-			if (result.isConfirmed) {
-			  await signerSaleContract.refundMyContribution()
-			  Swal.fire(
-				'Refund requested',
-				'Have a nice day',
-				'success'
-			  );
-			}
-		  });
-	});
+		var bnbInput = document.querySelector("#psBuyInput").value;
+		var taxText;
+		document.querySelector("#psCurrentPrice").textContent = saleprice;
+		document.querySelector("#psBoughtTokens").textContent = fromWei(salebalance);
+		document.querySelector("#psTotalContributed").textContent = fromWei(saletotalContibuted);
+		document.querySelector("#psHardCap").textContent = fromWei(salehardCap, '0');
+		document.querySelector("#psMinBuy").textContent = "Min buy: " + fromWei(saleminBuy, '0');
+		document.querySelector("#psMaxBuy").textContent = "Max buy: " + fromWei(salemaxBuy, '0');
+		if (salerefundType == 1) {
+			taxText = 'Refund currently available with ' + salerefundFee + '% tax';
+		}
+		else if (salerefundType == 2) {
+			taxText = 'Refund currently available without taxes';
+		}
+		document.querySelector("#psRefundButton").addEventListener("click", async function() {
+			
+			Swal.fire({
+				title: 'Are you sure?',
+				text: taxText,
+				icon: 'warning',
+				showCancelButton: true,
+				confirmButtonColor: '#3085d6',
+				cancelButtonColor: '#d33',
+				confirmButtonText: 'Refund'
+			}).then((result) => async function() {
+				if (result.isConfirmed) {
+				await signerSaleContract.refundMyContribution()
+				Swal.fire(
+					'Refund requested',
+					'Have a nice day',
+					'success'
+				);
+				}
+			});
+		});
 
-	document.querySelector("#psClaimButton").addEventListener("click", async function() {
-		await signerSaleContract.claim().catch((error) => { handleError(error); });
-	});
-	if ((parseInt(saleisEnded) == 1) && (parseInt(salebalance) > 0)) {
-		document.querySelector("#psClaimButton").disabled = false;
-	}
-	document.querySelector("#psBuyButton").addEventListener("click", async function() {
-		await signerSaleContract.contribute({value: toWei(bnbInput)}).catch((error) => { handleError(error); });
-	}); 
-	if (parseInt(saleisEnded) == 0) {
-		document.querySelector("#psBuyButton").disabled = false;
-		document.querySelector("#psStatus").textContent = " is LIVE";
+		document.querySelector("#psClaimButton").addEventListener("click", async function() {
+			await signerSaleContract.claim().catch((error) => { handleError(error); });
+		});
+		if ((parseInt(saleisEnded) == 1) && (parseInt(salebalance) > 0)) {
+			document.querySelector("#psClaimButton").disabled = false;
+		}
+		document.querySelector("#psBuyButton").addEventListener("click", async function() {
+			await signerSaleContract.contribute({value: toWei(bnbInput)}).catch((error) => { handleError(error); });
+		}); 
+		if (parseInt(saleisEnded) == 0) {
+			document.querySelector("#psBuyButton").disabled = false;
+			document.querySelector("#psStatus").textContent = " is LIVE";
+		}
+		else {
+			document.querySelector("#psStatus").textContent = " is ended";
+		}
+		if (salerefundType == 0) {
+			document.querySelector("#psRefundStatus").style.display = "none";
+			document.querySelector("#psRefundButton").style.display = "none";
+			document.querySelector("#psRefundTitle").style.display = "none";
+		}
+		else {
+			document.querySelector("#psRefundButton").disabled = false;
+		}
 	}
 	else {
-		document.querySelector("#psStatus").textContent = " is ended";
-	}
-	if (salerefundType == 0) {
-		document.querySelector("#psRefundStatus").textContent = "Refund is currently unavailable";
-	}
-	else {
-		document.querySelector("#psRefundStatus").textContent = "Refund is currently available";
-		document.querySelector("#psRefundButton").disabled = false;
+		const saleFunctionsMap = [
+			saleContract.price(),
+			saleContract.isEnded(),
+			saleContract.minBuy(),
+			saleContract.maxBuy(),
+			saleContract.totalContributed(),
+			saleContract.hardCap(),
+			saleContract.refundType(),
+			saleContract.refundFee()
+			];
+		const saleFunctionMapResults = await Promise.all(saleFunctionsMap);
+		const saleprice = fromWei(saleFunctionMapResults[0]);
+		const saleisEnded = saleFunctionMapResults[1];
+		const saleminBuy = saleFunctionMapResults[2];
+		const salemaxBuy = saleFunctionMapResults[3];
+		const saletotalContibuted = saleFunctionMapResults[4];
+		const salehardCap = saleFunctionMapResults[5];
+		const salerefundType = parseInt(saleFunctionMapResults[6]);
+		const salerefundFee = saleFunctionMapResults[7];
+
+		var bnbInput = document.querySelector("#psBuyInput").value;
+		var taxText;
+		document.querySelector("#psCurrentPrice").textContent = saleprice;
+		document.querySelector("#psTotalContributed").textContent = fromWei(saletotalContibuted);
+		document.querySelector("#psHardCap").textContent = fromWei(salehardCap, '0');
+		document.querySelector("#psMinBuy").textContent = "Min buy: " + fromWei(saleminBuy, '0');
+		document.querySelector("#psMaxBuy").textContent = "Max buy: " + fromWei(salemaxBuy, '0');
+		if (salerefundType == 1) {
+			taxText = 'Refund currently available with ' + salerefundFee + '% tax';
+		}
+		else if (salerefundType == 2) {
+			taxText = 'Refund currently available without taxes';
+		}
+		document.querySelector("#psRefundButton").addEventListener("click", async function() {
+			
+			Swal.fire({
+				title: 'Are you sure?',
+				text: taxText,
+				icon: 'warning',
+				showCancelButton: true,
+				confirmButtonColor: '#3085d6',
+				cancelButtonColor: '#d33',
+				confirmButtonText: 'Refund'
+			}).then((result) => async function() {
+				if (result.isConfirmed) {
+				await signerSaleContract.refundMyContribution()
+				Swal.fire(
+					'Refund requested',
+					'Have a nice day',
+					'success'
+				);
+				}
+			});
+		});
+		// document.querySelector("#psBuyButton").addEventListener("click", async function() {
+		// 	await signerSaleContract.contribute({value: toWei(bnbInput)}).catch((error) => { handleError(error); });
+		// }); 
+		if (parseInt(saleisEnded) == 0) {
+			document.querySelector("#psStatus").textContent = " is LIVE";
+		}
+		else {
+			document.querySelector("#psStatus").textContent = " is ended";
+		}
+		if (salerefundType == 0) {
+			document.querySelector("#psRefundStatus").style.display = "none";
+			document.querySelector("#psRefundButton").style.display = "none";
+			document.querySelector("#psRefundTitle").style.display = "none";
+		}
 	}
 	
 		
@@ -749,30 +901,56 @@ function timeConverter(UNIX){
 
 async function autoUpdate(isAuto) {
 	if (contract != undefined) {
-		document.querySelector("#walletID").innerHTML = "<a href='https://bscscan.com/address/" + provider.selectedAddress + "'>" + cutAdress(provider.selectedAddress) + "</a>";
-		document.querySelector("#isConnected").style.display = "block";
-		document.querySelector("#walletID").style.display = "block";
-		if (currentTab == 'main') {
-			await refreshMainTab(isAuto);
-			await loadSliders();
+		if (signerContract != undefined) {
+			document.querySelector("#walletID").innerHTML = "<a href='https://bscscan.com/address/" + provider.selectedAddress + "'>" + cutAdress(provider.selectedAddress) + "</a>";
+			document.querySelector("#isConnected").style.display = "block";
+			document.querySelector("#walletID").style.display = "block";
+			if (currentTab == 'main') {
+				await refreshMainTab(isAuto);
+				await loadSliders();
+			}
+			else if (currentTab == 'winnings') {
+				await refreshWinnersTab();
+				if( document.getElementById("toggleJackpots").getAttribute("aria-pressed") === 'true') { await showJackpots() }
+				else { await refreshWinnersTable() }
+			}
+			else if (currentTab == 'burners') {
+				refreshBurnersTable();
+			}
+			else if (currentTab == 'burnliquidity') {
+				refreshBurnLiquidityTab(isAuto);
+			}
+			else if (currentTab == 'privatesale') {
+				refreshPrivateSaleTab();
+			}
+			else if (currentTab == 'game1') {
+				await refreshGame1();
+			}
 		}
-		else if (currentTab == 'winnings') {
-			await refreshWinnersTab();
-			if( document.getElementById("toggleJackpots").getAttribute("aria-pressed") === 'true') { await showJackpots() }
-			else { await refreshWinnersTable() }
+		else {
+			if (currentTab == 'main') {
+				await refreshMainTab(isAuto);
+				await loadSliders();
+			}
+			else if (currentTab == 'winnings') {
+				await refreshWinnersTab();
+				if( document.getElementById("toggleJackpots").getAttribute("aria-pressed") === 'true') { await showJackpots() }
+				else { await refreshWinnersTable() }
+			}
+			else if (currentTab == 'burners') {
+				refreshBurnersTable();
+			}
+			else if (currentTab == 'burnliquidity') {
+				refreshBurnLiquidityTab(isAuto);
+			}
+			else if (currentTab == 'privatesale') {
+				refreshPrivateSaleTab();
+			}
+			else if (currentTab == 'game1') {
+				await refreshGame1();
+			}
 		}
-		else if (currentTab == 'burners') {
-			refreshBurnersTable();
-		}
-		else if (currentTab == 'burnliquidity') {
-			refreshBurnLiquidityTab(isAuto);
-		}
-		else if (currentTab == 'privatesale') {
-			refreshPrivateSaleTab();
-		}
-		else if (currentTab == 'game1') {
-			await refreshGame1();
-		}
+		
 	}
 }
 
