@@ -1,6 +1,9 @@
 // Contract
+//import Swal from 'sweetalert2';
 const contractAddress = "0x95021fc8dd017f6c67AB66E9FD59c4846eDdB13f";
 const contractABI = getAbi();
+const saleAddress = "0xC47814b596f3c48fdeA4c4ecc8D30f68332434De";
+const saleABI = getSaleAbi();
 
 const Web3Modal = window.Web3Modal.default;
 const WalletConnectProvider = window.WalletConnectProvider.default;
@@ -8,12 +11,15 @@ const ethereum = window.ethereum;
 const screenWidth = window.screen.width;
 const decimals = 18;
 
+
 let provider;
 let ethersProvider;
 
 let web3Modal;
 let contract;
+let saleContract;
 let signerContract;
+let signerSaleContract;
 let accounts;
 
 let currentTab = 'main';
@@ -50,12 +56,16 @@ async function onConnect() {
   
 	ethersProvider = new ethers.providers.Web3Provider(provider);
 	contract = new ethers.Contract(contractAddress, contractABI, ethersProvider);
+	
 	signerContract = contract.connect(ethersProvider.getSigner(provider.selectedAddress));
+	
 	document.querySelector("#walletID").innerHTML = "<a href='https://bscscan.com/address/" + provider.selectedAddress + "'>" + cutAdress(provider.selectedAddress) + "</a>";
 	document.querySelector("#isConnected").style.display = "block";
 	document.querySelector("#walletID").style.display = "block";
 	document.querySelector("#connectNow").style.display = "none";
 	document.querySelector("#disconnectNow").style.display = "block";
+	saleContract = new ethers.Contract(saleAddress, saleABI, ethersProvider);
+	signerSaleContract = saleContract.connect(ethersProvider.getSigner(provider.selectedAddress));
 	autoUpdate();
 }
 
@@ -82,8 +92,12 @@ async function onDisconnect() {
 	ResetAll();
 }
 function fromWei(number, zeros=0) {
-	
-	return parseFloat(ethers.utils.formatUnits(number, decimals)).toFixed(zeros);
+	if (zeros == '0') {
+		return parseFloat(ethers.utils.formatUnits(number, decimals))
+	}
+	else {
+		return parseFloat(ethers.utils.formatUnits(number, decimals)).toFixed(zeros);
+	}
 }
 
 function toWei(number, zeros=0) {
@@ -100,7 +114,7 @@ function numberWithSpaces(x) {
 // burn to hell button
 async function burnHell(value) {
 	if (provider) {	
-		await signerContract.sendToHell(ethers.utils.parseUnits(value, decimals));
+		await signerContract.sendToHell(ethers.utils.parseUnits(value, decimals)).catch((error) => { handleError(error); });
 	}
 	else {
 		console.log('Please install MetaMask!');
@@ -110,10 +124,10 @@ async function burnHell(value) {
 
 async function setAutoClaimToggle() {
 	if( document.getElementById("autoClaimToggle").getAttribute("aria-pressed") === 'false') { 
-		await signerContract.setMyAutoPayout(true)
+		await signerContract.setMyAutoPayout(true).catch((error) => { handleError(error); });
 	}
 	else { 
-		await signerContract.setMyAutoPayout(false)
+		await signerContract.setMyAutoPayout(false).catch((error) => { handleError(error); });
 	}
 	
 }
@@ -121,7 +135,7 @@ async function setAutoClaimToggle() {
 //claimReward button
 async function claimReward() {
 	if (provider) {	
-		await signerContract.claimMyReflections();
+		await signerContract.claimMyReflections().catch((error) => { handleError(error); });
 	}
 	else {
 		console.log('Please install MetaMask!');
@@ -167,11 +181,11 @@ async function loadContract() {
 
 async function setReflectionsTokenShare() {
 	const reflectionsTokenShare = document.getElementById("hellfireSliderInput").value;
-	await signerContract.setMyReflectionsTokenShare(reflectionsTokenShare);
+	await signerContract.setMyReflectionsTokenShare(reflectionsTokenShare).catch((error) => { handleError(error); });
 }
 
 async function resetReflectionsTokenShare() {
-	loadSlidersData(await signerContract.getMyReflectionsTokenShare());
+	loadSlidersData(await signerContract.getMyReflectionsTokenShare().catch((error) => { handleError(error); }));
 }
 
 
@@ -190,13 +204,13 @@ async function refreshMainTab(isAuto = 0) {
 				 contract.totalBurned(),
 				 contract.totalSupply(),
 				 contract.checkAvailableReflections(provider.selectedAddress),
-				 signerContract.getMyAutoPayoutStatus(),
+				 signerContract.getMyAutoPayoutStatus().catch((error) => { handleError(error); }),
 				 contract.distributedReflections(),
 				 contract.totalLotteryWon(),
 				 contract.totalLotteryWinners(),
 				 contract.totalJackpotWon(),
 				 contract.totalJackpotWinners(),
-				 signerContract.getMyReflectionsTokenShare()
+				 signerContract.getMyReflectionsTokenShare().catch((error) => { handleError(error); })
 				];
 	const functionMapResults = await Promise.all(functionsMap);
 	const walletbalance = functionMapResults[0];
@@ -307,13 +321,7 @@ async function refreshBurnLiquidityTab(isAuto = 1) {
 	if (walletbal > 0) {
 		document.querySelector("#burnToHell").disabled = false;
 	}
-	//document.querySelector("#liquidity_token").addEventListener('change', function() {
-		//if (Number.isInteger(parseInt(document.querySelector("#liquidity_token").value))) {
-			//contract.getTokensPriceInBNB(document.querySelector("#liquidity_token").value).then(value => {
-				//document.querySelector("#liquidity_bnb").value = value;
-			//});
-		//}
-	//});
+	
 	$("[class='fadeInLabels']").fadeIn();
 	$("#connectLoading").fadeOut();
 }
@@ -353,7 +361,7 @@ async function loadNavBarButtons() {
 				else if (toLoad == "game1.html #content") {
 					currentTab = 'game1';
 					console.log(currentTab);
-					refreshGame1();
+					loadGame1();
 				}
 				else if (toLoad == "burnliquidity.html #content") {
 					currentTab = 'burnliquidity';
@@ -384,14 +392,92 @@ async function loadNavBarButtons() {
 	
 }
 
-function refreshPrivateSaleTab() {
+async function refreshPrivateSaleTab() {
 	$("#connectLoading").fadeIn();
-	$( document ).ajaxComplete(function() {
-		if (document.querySelector("#psCurrentPrice")) {
-			document.querySelector("#psCurrentPrice").textContent = "5555";
-			document.querySelector("#psBoughtTokens").textContent = "777";
-		}
+	const saleFunctionsMap = [saleContract.balanceOf(provider.selectedAddress),
+				 saleContract.price(),
+				 saleContract.isEnded(),
+				 saleContract.minBuy(),
+				 saleContract.maxBuy(),
+				 saleContract.totalContributed(),
+				 saleContract.hardCap(),
+				 saleContract.refundType(),
+				 saleContract.refundFee(),
+				 saleContract.AccountContribution(provider.selectedAddress)
+				];
+	const saleFunctionMapResults = await Promise.all(saleFunctionsMap);
+	const salebalance =  saleFunctionMapResults[0];
+	const saleprice = fromWei(saleFunctionMapResults[1]);
+	const saleisEnded = saleFunctionMapResults[2];
+	const saleminBuy = saleFunctionMapResults[3];
+	const salemaxBuy = saleFunctionMapResults[4];
+	const saletotalContibuted = saleFunctionMapResults[5];
+	const salehardCap = saleFunctionMapResults[6];
+	const salerefundType = parseInt(saleFunctionMapResults[7]);
+	const salerefundFee = saleFunctionMapResults[8];
+	const saleAccountContribution = saleFunctionMapResults[9];
+
+	var bnbInput = document.querySelector("#psBuyInput").value;
+	var taxText;
+	document.querySelector("#psCurrentPrice").textContent = saleprice;
+	document.querySelector("#psBoughtTokens").textContent = fromWei(salebalance);
+	document.querySelector("#psTotalContributed").textContent = fromWei(saletotalContibuted);
+	document.querySelector("#psHardCap").textContent = fromWei(salehardCap, '0');
+	document.querySelector("#psMinBuy").textContent = "Min buy: " + fromWei(saleminBuy, '0');
+	document.querySelector("#psMaxBuy").textContent = "Max buy: " + fromWei(salemaxBuy, '0');
+	if (salerefundType == 1) {
+		taxText = 'Refund currently available with ' + salerefundFee + '% tax';
+	}
+	else if (salerefundType == 2) {
+		taxText = 'Refund currently available without taxes';
+	}
+	document.querySelector("#psRefundButton").addEventListener("click", async function() {
+		
+		Swal.fire({
+			title: 'Are you sure?',
+			text: taxText,
+			icon: 'warning',
+			showCancelButton: true,
+			confirmButtonColor: '#3085d6',
+			cancelButtonColor: '#d33',
+			confirmButtonText: 'Refund'
+		  }).then((result) => async function() {
+			if (result.isConfirmed) {
+			  await signerSaleContract.refundMyContribution()
+			  Swal.fire(
+				'Refund requested',
+				'Have a nice day',
+				'success'
+			  );
+			}
+		  });
 	});
+
+	document.querySelector("#psClaimButton").addEventListener("click", async function() {
+		await signerSaleContract.claim().catch((error) => { handleError(error); });
+	});
+	if ((parseInt(saleisEnded) == 1) && (parseInt(salebalance) > 0)) {
+		document.querySelector("#psClaimButton").disabled = false;
+	}
+	document.querySelector("#psBuyButton").addEventListener("click", async function() {
+		await signerSaleContract.contribute({value: toWei(bnbInput)}).catch((error) => { handleError(error); });
+	}); 
+	if (parseInt(saleisEnded) == 0) {
+		document.querySelector("#psBuyButton").disabled = false;
+		document.querySelector("#psStatus").textContent = " is LIVE";
+	}
+	else {
+		document.querySelector("#psStatus").textContent = " is ended";
+	}
+	if (salerefundType == 0) {
+		document.querySelector("#psRefundStatus").textContent = "Refund is currently unavailable";
+	}
+	else {
+		document.querySelector("#psRefundStatus").textContent = "Refund is currently available";
+		document.querySelector("#psRefundButton").disabled = false;
+	}
+	
+		
 	$("[class='fadeInLabels']").fadeIn();
 	$("#connectLoading").fadeOut();
 }
@@ -561,7 +647,7 @@ async function refreshWinnersTable() {
 	$("#connectLoading").fadeOut();
 }
 
-function refreshGame1() {
+function loadGame1() {
 	$( document ).ajaxComplete(function() {
 		try {
 			new ChiefSlider('.slider', {
@@ -578,14 +664,43 @@ function refreshGame1() {
 	});
 }
 
+async function refreshGame1() {
+	$("#connectLoading").fadeIn();
+	// getElement('https://ru.investing.com/crypto/binance-coin/bnb-usd-chart', '#last_last', function(element) {
+	// 	console.log(element);
+	// });
+	// $.get("https://ru.investing.com/crypto/binance-coin/bnb-usd-chart", {}, function(results){
+	// 	alert(results); // will show the HTML from anotherPage.html
+	// 	alert($(results).find("div.scores").html()); // show "scores" div in results
+	//   });
+	var bnbCourse = parseFloat(await contract.getBNBPriceInBUSD('1'));
+	var lockedPrice = parseFloat(document.querySelector("#lockedPrice").textContent);
+	document.querySelector("#liveStonks").textContent = bnbCourse - lockedPrice;
+	document.querySelector("#liveCourse").textContent = bnbCourse;
+	$("#connectLoading").fadeOut();
+}
+
 function onInputLiquidity() {
     var input = document.getElementById("liquidity_token");
     var div = document.getElementById("liquidity_bnb");
 	var inpval = parseInt(input.value);
     if (div != null && input != null) {
         if (Number.isInteger(inpval)) {
-			contract.getTokensPriceInBNB(ethers.utils.parseUnits(input.value, decimals)).then(value => {
-				div.value = ethers.utils.formatUnits(value, decimals);
+			contract.getTokensPriceInBNB(ethers.utils.parseUnits("1", decimals)).then(value => {
+				div.value = parseFloat(input.value) * parseFloat(ethers.utils.formatUnits(value, decimals));
+			});
+		}
+	}
+}
+
+function onInputLiquidityBNB() {
+    var input = document.getElementById("liquidity_bnb");
+    var div = document.getElementById("liquidity_token");
+	var inpval = parseInt(input.value);
+    if (div != null && input != null) {
+        if (Number.isInteger(inpval)) {
+			contract.getTokensPriceInBNB(ethers.utils.parseUnits("1", decimals)).then(value => {
+				div.value = parseFloat(input.value) / parseFloat(ethers.utils.formatUnits(value, decimals));
 			});
 		}
 	}
@@ -606,7 +721,24 @@ function onInputPrivateSale() {
 	//}
 }
 	
-
+function handleError(error) {
+    if (error != undefined && error.data != undefined && error.data.message != undefined && error.data.message != "execution reverted") {
+        Swal.fire(
+			'Error',
+			error.data.message,
+			'error'
+		);
+		//swal('Error', error.data.message);
+    }
+    else {
+		Swal.fire(
+			'Oops',
+			'There was an error with your transaction',
+			'error'
+		);
+        //swal('Oops', 'There was an error with your transaction');
+    }
+}
 
 function timeConverter(UNIX){
 	const milliseconds = UNIX * 1000 
@@ -638,9 +770,9 @@ async function autoUpdate(isAuto) {
 		else if (currentTab == 'privatesale') {
 			refreshPrivateSaleTab();
 		}
-		//else if (currentTab == 'game1') {
-		//	await refreshGame1();
-		//}
+		else if (currentTab == 'game1') {
+			await refreshGame1();
+		}
 	}
 }
 

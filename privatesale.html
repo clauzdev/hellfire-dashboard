@@ -24,6 +24,7 @@
     <script type="text/javascript" src="https://unpkg.com/%40walletconnect/web3-provider@1.5.2/dist/umd/index.min.js"></script>
 <script src="assets/js/main.js" crossorigin="anonymous"></script>
 <link rel="stylesheet" href="assets/Slider/chief-slider.css">
+<script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
 <script src="assets/Slider/chief-slider.js"></script>
 </head>
 <body class="theme-orange menu_dark bg-dark">
@@ -36,7 +37,7 @@
     <div class="block-header">
         <div class="row">
             <div class="col-lg-7 col-md-6 col-sm-12 text-light">
-                <h2>Private Sale</h2>
+                <h2>Private Sale<span id="psStatus"></span></h2>
                 
             </div>
             
@@ -47,26 +48,40 @@
             <div class="col-lg-3 col-md-6">
                 <div class="card darkCard">
                     <div class="body text-light">
-						<p style="font-size: x-large; margin-bottom: 0px">Current price</p>
+						<p style="font-size: x-large; margin-bottom: 0px">Private sale price</p>
 						<small class="text-muted">Amount of HELLFIRE tokens for 1 BNB</small>
-						<h3 style="margin-bottom: 6px"><span id="psCurrentPrice" class="fadeInLabels"></span></h3>
+					  <h3 style="margin-bottom: 6px"><span id="psCurrentPrice" class="fadeInLabels"></span></h3>
 						<p style="font-size: x-large; margin-bottom: 0px;">Buy tokens</p>
 						<small class="text-muted">Enter amount of BNB</small>
 						<p style="font-size: x-large"><input class="text-light burnInput" id="psBuyInput" type="text" size="" placeholder="BNB" style="width:100%; background: #343a40" oninput="onInputPrivateSale();"></p>
-						<p style="font-size: x-large; margin-bottom: 0px">Tokens</p>
 						<small class="text-muted">Amount of tokens you'll get</small>
 						<h3 style="margin-bottom: 6px"><span id="psTokensToBuy" class="fadeInLabels"></span></h3>  
                         <button id="psBuyButton" class="btn btn-primary" style="width:100%" disabled>Buy</button>
-                    </div>
-                </div>
-            </div>
-            <div class="col-lg-3 col-md-6">
-                <div class="card darkCard">
-                    <div class="body text-light">
+						<hr>
 						<p style="font-size: x-large; margin-bottom: 0px;">Bought tokens</p>
 						<small class="text-muted">Tokens</small>
 						<h3 style="margin-bottom: 6px"><span id="psBoughtTokens" class="fadeInLabels"></span></h3>  
                         <button id="psClaimButton" class="btn btn-primary" style="width:100%" disabled>Claim</button>
+                    </div>
+                </div>
+            </div>
+			<div class="col-lg-3 col-md-6">
+                <div class="card darkCard">
+                    <div class="body text-light">
+						<p style="font-size: large; margin-bottom: 0px;">Total contributed</p>
+						<small class="text-muted">Total contributed</small>
+                        <h3 style="margin-bottom: 2px"><span id="psTotalContributed" class="fadeInLabels"></span><img src="assets/images/busd_32.png" alt="BNB"></h3>
+						<hr>
+						<p style="font-size: large; margin-bottom: 0px">Hard cap</p>		
+                        <h3 style="margin-bottom: 2px"><span id="psHardCap" class="fadeInLabels"> </span><img src="assets/images/busd_32.png" alt="BUSD"></h3>
+						<hr>
+						<p style="font-size: large; margin-bottom: 0px">Buy Limits</p>
+						<h3 style="margin-bottom: 2px"><span id="psMinBuy" class="fadeInLabels"></span><img src="assets/images/busd_32.png" alt="BUSD"></h3>
+						<h3 style="margin-bottom: 2px"><span id="psMaxBuy" class="fadeInLabels"></span><img src="assets/images/busd_32.png" alt="BUSD"></h3>
+						<hr>
+						<p style="font-size: large; margin-bottom: 0px">Refund status</p>
+						<h3 style="margin-bottom: 2px"><span id="psRefundStatus" class="fadeInLabels"></span></h3>
+						<button id="psRefundButton" class="btn btn-primary" style="width:100%" disabled>Emergency withdrawal</button>
                     </div>
                 </div>
             </div>

@@ -38,13 +38,93 @@
 
 <div id="content">
 	<section  class="content home">
-	<div class="container block-header">
+	<div class="container block-header comingSoon-outer" style="margin: auto">
 
-    <div class="slider" data-slider="chiefslider" style="height: 75vh; position: relative">
-      <div class="slider__container" style="margin: 0; position: absolute; top: 50%; left: 50%; -ms-transform: translate(-50%, -50%); transform: translate(-50%, -50%);">
+    <div class="slider" data-slider="chiefslider" style="height: 75vh; margin: auto; position: relative">
+      <div class="slider__container" style="margin: 0; position: absolute; top: 50%; left: 50%; -ms-transform: translate(-50%, -50%); transform: translate(-50%, -50%); width: 75vw;">
         <div class="slider__wrapper">
           <div class="slider__items">
             <div class="slider__item card-outer">
+              <div class="slider__item-container card-inner">
+                <div class="slider__item-content">
+					<div class="imgblock">
+						<center><img src="assets/images/up.png" alt="UP"></center>
+						<center><span>Up(1.5x)</span></center>
+					</div>
+					<div class="card-body" style="background-color: white">
+						<div class="slider__content_footer" style="height: 50px;">
+							<span class="slider__content_author">LAST PRICE:</span>
+
+						</div>
+						<div class ="slider__content_footer" style="height: 50px;">
+							<h2>$299.580</h2>
+							<span class="slider__content_views stonks">↑ $0.100</span>
+						</div>
+						<div class="slider__content_footer" style="height: 50px;">
+
+							<span class="slider__content_author">Locked price:</span>
+							<span class="slider__content_views">$299.480</span>
+						</div>
+						<div class="slider__content_footer" style="height: 70px;">
+
+							<span class="slider__content_author"><b>Prize pool:</b></span>
+							<span class="slider__content_views"><b>666 BNB</b></span>
+						</div>
+					</div>
+					<div class="imgblock-down">
+						<center><img src="assets/images/down.png" alt="UP"></center>
+						<center><span>Down(3x)</span></center>
+					</div>
+                  <div class="slider__content_footer">
+                    
+                    <span class="slider__content_author">Expired</span>
+                    <span class="slider__content_views">#121</span>
+                  </div>
+
+                </div>
+              </div>
+            </div>
+			<div class="slider__item card-outer">
+              <div class="slider__item-container card-inner">
+                <div class="slider__item-content">
+					<div class="imgblock">
+						<center><img src="assets/images/up.png" alt="UP"></center>
+						<center><span>Up(1.5x)</span></center>
+					</div>
+					<div class="card-body" style="background-color: white">
+						<div class="slider__content_footer" style="height: 50px;">
+							<span class="slider__content_author">LAST PRICE:</span>
+
+						</div>
+						<div class ="slider__content_footer" style="height: 50px;">
+							<h2>$299.680</h2>
+							<span class="slider__content_views stonks">↑ $0.100</span>
+						</div>
+						<div class="slider__content_footer" style="height: 50px;">
+
+							<span class="slider__content_author">Locked price:</span>
+							<span class="slider__content_views">$299.580</span>
+						</div>
+						<div class="slider__content_footer" style="height: 70px;">
+
+							<span class="slider__content_author"><b>Prize pool:</b></span>
+							<span class="slider__content_views"><b>666 BNB</b></span>
+						</div>
+					</div>
+					<div class="imgblock-down">
+						<center><img src="assets/images/down.png" alt="UP"></center>
+						<center><span>Down(3x)</span></center>
+					</div>
+                  <div class="slider__content_footer">
+                    
+                    <span class="slider__content_author">Expired</span>
+                    <span class="slider__content_views">#122</span>
+                  </div>
+
+                </div>
+              </div>
+            </div>
+			<div class="slider__item card-outer">
               <div class="slider__item-container card-inner">
                 <div class="slider__item-content">
 					<div class="imgblock">
@@ -97,13 +177,13 @@
 						
 						</div>
 						<div class ="slider__content_footer" style="height: 50px;">
-							<h2>$300.180</h2>
-							<span class="slider__content_views stonks">↑ $0.180</span>
+							<h2>$<span id="liveCourse"></span></h2>
+							<span class="slider__content_views stonks">↑ $<span id="liveStonks">0.180</span></span>
 						</div>
 						<div class="slider__content_footer" style="height: 50px;">
 
 							<span class="slider__content_author">Locked price:</span>
-							<span class="slider__content_views">$300</span>
+							<span class="slider__content_views">$<span id="lockedPrice">300</span></span>
 						</div>
 						<div class="slider__content_footer" style="height: 70px;">
 
@@ -218,14 +298,16 @@
           </div>
         </div>
       </div>
-      <a href="#" class="slider__control" data-slide="prev"></a>
-      <a href="#" class="slider__control" data-slide="next"></a>
+      <a href="#" class="slider__control" data-slide="prev" style="margin-left: 0"></a>
+      <a href="#" class="slider__control" data-slide="next" style="margin-right: 0"></a>
       <ol class="slider__indicators">
         <li data-slide-to="0"></li>
         <li data-slide-to="1"></li>
         <li data-slide-to="2"></li>
         <li data-slide-to="3"></li>
         <li data-slide-to="4"></li>
+		<li data-slide-to="5"></li>
+		<li data-slide-to="6"></li>
       </ol>
     </div>
 

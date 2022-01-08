@@ -60,11 +60,11 @@
 }
 
 .slider__control[data-slide='prev'] {
-  left: -100px;
+  left: -860px;
 }
 
 .slider__control[data-slide='next'] {
-  right: -100px;
+  right: -860px;
 }
 
 .slider__control:hover,
@@ -179,8 +179,8 @@ body {
 
 @media (min-width: 1200px) {
   .slider__item {
-	flex: 0 0 33.33333%;
-	max-width: 33.33333%;
+	flex: 0 0 20%;
+	max-width: 20%;
   }
 }
 
