@@ -1,1 +1,1 @@
-# hellfire-dashboard demo https://clauzdev.github.io/hellfire-dashboard/
+hellfire-dashboard demo https://clauzdev.github.io/hellfire-dashboard/
